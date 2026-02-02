@@ -7,7 +7,7 @@
 
 **Sentinel** is an AI-powered security agent that doesn't just *find* vulnerabilities in your code — it **fixes them automatically**.
 
-Powered by **Llama 3** (via Groq) for instant inference and **LibCST** for surgical code editing.
+Powered by **Llama 3** (via Groq/Ollama) and **Neuro-Symbolic** verification (Bandit/Semgrep).
 
 ---
 
@@ -34,13 +34,11 @@ Run AI completely **on your machine** — no API keys, no internet needed.
    ```
 4. **Run Sentinel** — it auto-detects Ollama!
 
----
-
 #### Option B: Groq (FAST, ONLINE)
 Use Groq's cloud for blazing-fast inference.
 
-1. Get free API key: [console.groq.com](https://console.groq.com/)
-2. Set it:
+1. Get free API key: [console.groq.com/keys](https://console.groq.com/keys)
+2. Set it (key starts with `gsk_`):
    ```powershell
    # Windows
    $env:GROQ_API_KEY="gsk_your_key_here"
@@ -50,23 +48,27 @@ Use Groq's cloud for blazing-fast inference.
    export GROQ_API_KEY="gsk_your_key_here"
    ```
 
-### Fix a File (Preview)
-```bash
-sentinel fix app.py
-```
-This analyzes your file and shows you the proposed fix.
+---
 
-### Fix a File (Auto-Apply)
-```bash
-sentinel apply app.py
-```
-This fixes the file **and writes the changes directly** (creates a `.bak` backup).
+## ⚡ Multi-Language Support (v0.2.1)
 
-### Launch the Web Dashboard
+Sentinel now supports auto-fixing vulnerabilities in:
+
+| Language | Supported Files | Verification Tool |
+|----------|-----------------|-------------------|
+| **Python** | `.py` | Bandit (SAST) |
+| **JavaScript** | `.js` | Semgrep |
+| **TypeScript** | `.ts` | Semgrep |
+| **Java** | `.java` | Semgrep |
+| **C++** | `.cpp`, `.c` | Semgrep |
+| **Go** | `.go` | Semgrep |
+| **SQL** | `.sql` | Semgrep |
+
+**Usage is identical:**
 ```bash
-sentinel ui
+sentinel fix src/main.cpp
+sentinel apply services/auth.js
 ```
-Opens an interactive chat interface at `http://localhost:8000`.
 
 ---
 
@@ -83,77 +85,29 @@ Opens an interactive chat interface at `http://localhost:8000`.
                                     (Loop until fixed)
 ```
 
-1. **Planner**: Reads your code and the vulnerability description. Creates a remediation plan.
-2. **Coder**: Writes a Python patch based on the plan.
-3. **Test**: Runs the patch in a sandboxed environment (Docker).
-4. **Reflector**: If tests fail, it critiques the code and sends feedback to the Coder.
-5. **Repeat** until the tests pass (max 10 iterations).
+1. **Planner**: Analyzes code & vulnerability. Uses RAG to find fix patterns.
+2. **Coder**: Writes the patch in the target language (Python, C++, JS, etc.).
+3. **Verifier**: Runs SAST (Bandit or Semgrep) to verify safety.
+4. **Reflector**: If SAST fails, providing feedback for self-correction.
 
 ---
 
 ## 💻 Usage Examples
 
-### Example 1: SQL Injection Fix
-**Your vulnerable code (`auth.py`):**
-```python
-def get_user(username):
-    query = f"SELECT * FROM users WHERE name = '{username}'"  # BAD!
-    cursor.execute(query)
-    return cursor.fetchone()
-```
-
-**Run Sentinel:**
+### Python (SQL Injection)
 ```bash
-sentinel apply auth.py -m "SQL Injection vulnerability"
+sentinel apply auth.py
 ```
 
-**Result (automatically written to `auth.py`):**
-```python
-def get_user(username):
-    query = "SELECT * FROM users WHERE name = ?"  # FIXED!
-    cursor.execute(query, (username,))
-    return cursor.fetchone()
-```
-
----
-
-### Example 2: Command Injection Fix
-**Your vulnerable code (`ping.py`):**
-```python
-import os
-
-def ping(ip):
-    os.system("ping -c 1 " + ip)  # BAD!
-```
-
-**Run Sentinel:**
+### JavaScript (XSS)
 ```bash
-sentinel fix ping.py
+sentinel apply frontend/input.js
 ```
 
-**Proposed Fix:**
-```python
-import subprocess
-
-def ping(ip):
-    subprocess.run(["ping", "-c", "1", ip], check=True)  # FIXED!
-```
-
----
-
-## 🖥️ Web Dashboard (UI)
-
-For a visual experience, run:
+### C++ (Buffer Overflow)
 ```bash
-sentinel ui
+sentinel fix src/buffer_test.cpp
 ```
-
-Then open `http://localhost:8000` in your browser.
-
-**Features:**
-- 💬 Chat-based interface
-- 🔄 See the agent's thought process in real-time
-- ✅ Review and approve patches before applying
 
 ---
 
@@ -161,13 +115,11 @@ Then open `http://localhost:8000` in your browser.
 
 | Command | Description |
 |---------|-------------|
-| `sentinel fix <file>` | Analyze and show the fix (preview only) |
+| `sentinel setup` | Interactive setup guide |
+| `sentinel fix <file>` | Analyze and show fix (preview only) |
 | `sentinel apply <file>` | Analyze, fix, and write to the file |
 | `sentinel ui` | Launch the web dashboard |
 | `sentinel version` | Show version info |
-
-**Options:**
-- `-m, --message "description"` — Provide context about the vulnerability
 
 ---
 
@@ -180,29 +132,10 @@ pip install sentinel-sec
 
 ### From GitHub (Development)
 ```bash
-git clone https://github.com/YOUR_USERNAME/project-sentinel.git
-cd project-sentinel
+git clone https://github.com/VaibhavBhagat665/sentinel-sec.git
+cd sentinel-sec
 pip install -e .
 ```
-
----
-
-## ⚙️ Requirements
-
-- Python 3.12+
-- Docker (optional, for sandboxed testing)
-
----
-
-## 🏗️ Tech Stack
-
-| Component | Technology |
-|-----------|------------|
-| LLM | Groq (Llama 3.1 8B) |
-| Agent Framework | LangGraph |
-| Code Editing | LibCST |
-| Web UI | Chainlit |
-| Packaging | setuptools, twine |
 
 ---
 
@@ -219,14 +152,6 @@ pip install -e .
 ## 📄 License
 
 MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [Groq](https://groq.com/) for blazing-fast inference
-- [LangChain](https://langchain.com/) & [LangGraph](https://github.com/langchain-ai/langgraph) for agent orchestration
-- [LibCST](https://github.com/Instagram/LibCST) for surgical code modification
 
 ---
 

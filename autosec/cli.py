@@ -18,7 +18,7 @@ def print_banner():
     print(f"""
 {CYAN}╔═══════════════════════════════════════╗
 ║  🛡️  SENTINEL - Security Agent         ║
-║     Autonomous Vulnerability Fixer     ║
+║     Autonomous Vulnerability Fixer    ║
 ╚═══════════════════════════════════════╝{RESET}
 """)
 
@@ -37,11 +37,11 @@ def run_setup():
   4. Done! Sentinel will auto-detect it.
 
 {GREEN}Option B: Groq Cloud (fast, free tier){RESET}
-  1. Sign up: https://console.groq.com
-  2. Create API key
+  1. Sign up: https://console.groq.com/keys
+  2. Create API key (starts with "gsk_")
   3. Set it:
-     Windows:  {CYAN}$env:GROQ_API_KEY="your_key"{RESET}
-     Mac/Linux: {CYAN}export GROQ_API_KEY="your_key"{RESET}
+     Windows:  {CYAN}$env:GROQ_API_KEY="gsk_..."{RESET}
+     Mac/Linux: {CYAN}export GROQ_API_KEY="gsk_..."{RESET}
 """)
     
     print("Step 2: Test It")
@@ -87,7 +87,7 @@ def run_fix_headless(file_path, issue_desc):
     initial_state = {
         "messages": [HumanMessage(content=f"Fix: {file_path}. {issue}")],
         "cve_id": "SENTINEL-FIX",
-        "repo_path": os.path.dirname(os.path.abspath(file_path)),
+        "repo_path": os.path.abspath(file_path),
         "rag_context": rag_context,
         "iterations": 0,
         "sast_issues": []

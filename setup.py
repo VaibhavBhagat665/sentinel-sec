@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="sentinel-sec",
-    version="0.2.0",
+    version="0.2.1",
     packages=find_packages(),
     install_requires=[
         "langgraph",
@@ -19,6 +19,7 @@ setup(
         "sentence-transformers",
         "colorama",
         "bandit",
+        "semgrep",
         "libcst",
         "pydantic",
         "qdrant-client",
@@ -37,11 +38,11 @@ setup(
     description="🛡️ Autonomous Security Agent that finds AND fixes vulnerabilities in your code.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/YOUR_USERNAME/project-sentinel",
+    url="https://github.com/VaibhavBhagat665/sentinel-sec",
     project_urls={
-        "Bug Tracker": "https://github.com/YOUR_USERNAME/project-sentinel/issues",
-        "Documentation": "https://github.com/YOUR_USERNAME/project-sentinel#readme",
-        "Source Code": "https://github.com/YOUR_USERNAME/project-sentinel",
+        "Bug Tracker": "https://github.com/VaibhavBhagat665/sentinel-sec/issues",
+        "Documentation": "https://github.com/VaibhavBhagat665/sentinel-sec#readme",
+        "Source Code": "https://github.com/VaibhavBhagat665/sentinel-sec",
     },
     classifiers=[
         "Development Status :: 4 - Beta",
