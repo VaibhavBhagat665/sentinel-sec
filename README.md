@@ -1,158 +1,260 @@
+<div align="center">
+
+
 # 🛡️ Project Sentinel
-### The Autonomous Security Engineer for Your Codebase
 
-[![PyPI version](https://badge.fury.io/py/sentinel-sec.svg)](https://pypi.org/project/sentinel-sec/)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+### The autonomous security engineer for your codebase.
 
-**Sentinel** is an AI-powered security agent that doesn't just *find* vulnerabilities in your code — it **fixes them automatically**.
+Most scanners hand you a list of problems and wish you luck.<br />
+Sentinel finds the vulnerability, writes the fix, and **proves it works** before touching your code.
 
-Powered by **Llama 3** (via Groq/Ollama) and **Neuro-Symbolic** verification (Bandit/Semgrep).
+<br />
 
----
+[![PyPI](https://img.shields.io/pypi/v/sentinel-sec?style=for-the-badge&logo=pypi&logoColor=white&color=3775A9)](https://pypi.org/project/sentinel-sec/)
+![Python](https://img.shields.io/badge/Python_3.12+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Llama 3](https://img.shields.io/badge/Llama_3-0467DF?style=for-the-badge&logo=meta&logoColor=white)
+![Semgrep](https://img.shields.io/badge/Semgrep-1B2C4B?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+[**Quick Start**](#-quick-start) · [**How It Works**](#-how-it-works) · [**Languages**](#-supported-languages) · [**Commands**](#-cli-commands) · [**Contribute**](#-contributing)
+
+<br />
+
+
+</div>
+
+<br />
+
+## 📖 Table of Contents
+
+- [What is Sentinel](#-what-is-sentinel)
+- [Quick Start](#-quick-start)
+- [Choose Your AI Backend](#-choose-your-ai-backend)
+- [How It Works](#-how-it-works)
+- [Supported Languages](#-supported-languages)
+- [Usage Examples](#-usage-examples)
+- [CLI Commands](#-cli-commands)
+- [Installation Options](#-installation-options)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+<br />
+
+## 🧠 What is Sentinel
+
+Sentinel is an AI-powered security agent. It reads your code, spots the vulnerability, and writes a patch. Then, instead of just trusting the AI, it **checks its own work** with a real static analysis tool. If the fix doesn't pass, it reads the failure, thinks again, and retries until the problem is actually gone.
+
+That combination is the idea behind it: a language model for creativity, and **neuro-symbolic verification** (Bandit and Semgrep) for ground truth.
+
+| | Typical scanner | Plain AI assistant | **Sentinel** |
+|:--|:--:|:--:|:--:|
+| Finds vulnerabilities | ✅ | ⚠️ | ✅ |
+| Writes the fix | ❌ | ✅ | ✅ |
+| Verifies the fix with SAST | ❌ | ❌ | ✅ |
+| Self-corrects when the fix fails | ❌ | ❌ | ✅ |
+| Runs fully offline | ✅ | ❌ | ✅ *(with Ollama)* |
+
+<br />
 
 ## 🚀 Quick Start
 
-### Install
+**1. Install**
+
 ```bash
 pip install sentinel-sec
 ```
 
-### Setup (Choose One)
+**2. Pick an AI backend** (details [below](#-choose-your-ai-backend)), or just run the guided setup:
 
-#### Option A: Ollama (FREE, OFFLINE) ⭐ Recommended
-Run AI completely **on your machine** — no API keys, no internet needed.
+```bash
+sentinel setup
+```
 
-1. **Install Ollama**: [ollama.ai/download](https://ollama.ai/download)
-2. **Pull the model**:
+**3. Fix something**
+
+```bash
+sentinel fix src/main.cpp      # preview the fix
+sentinel apply services/auth.js  # fix it and write to the file
+```
+
+That's it. Sentinel auto-detects the language and picks the right verifier.
+
+<br />
+
+## 🔌 Choose Your AI Backend
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🏠 Ollama &nbsp; `FREE · OFFLINE`
+⭐ **Recommended**
+
+Runs entirely on your machine. No API keys, no internet, and your code never leaves your laptop.
+
+1. Install Ollama from [ollama.ai/download](https://ollama.ai/download)
+2. Pull the model:
    ```bash
    ollama pull llama3
    ```
-3. **Start Ollama** (keep running in background):
+3. Keep it running in the background:
    ```bash
    ollama serve
    ```
-4. **Run Sentinel** — it auto-detects Ollama!
+4. Run Sentinel. It **auto-detects** Ollama.
 
-#### Option B: Groq (FAST, ONLINE)
-Use Groq's cloud for blazing-fast inference.
+</td>
+<td width="50%" valign="top">
 
-1. Get free API key: [console.groq.com/keys](https://console.groq.com/keys)
-2. Set it (key starts with `gsk_`):
-   ```powershell
-   # Windows
-   $env:GROQ_API_KEY="gsk_your_key_here"
-   ```
+### ⚡ Groq &nbsp; `FAST · ONLINE`
+
+Cloud inference that's very quick.
+
+1. Get a free API key at [console.groq.com/keys](https://console.groq.com/keys) (it starts with `gsk_`)
+2. Set it as an environment variable:
+
+   **Linux / macOS**
    ```bash
-   # Linux/Mac
    export GROQ_API_KEY="gsk_your_key_here"
    ```
+   **Windows (PowerShell)**
+   ```powershell
+   $env:GROQ_API_KEY="gsk_your_key_here"
+   ```
+3. Run Sentinel.
 
----
+</td>
+</tr>
+</table>
 
-## ⚡ Multi-Language Support (v0.2.1)
+<br />
 
-Sentinel now supports auto-fixing vulnerabilities in:
+## ⚙️ How It Works
 
-| Language | Supported Files | Verification Tool |
-|----------|-----------------|-------------------|
-| **Python** | `.py` | Bandit (SAST) |
-| **JavaScript** | `.js` | Semgrep |
-| **TypeScript** | `.ts` | Semgrep |
-| **Java** | `.java` | Semgrep |
-| **C++** | `.cpp`, `.c` | Semgrep |
-| **Go** | `.go` | Semgrep |
-| **SQL** | `.sql` | Semgrep |
+Sentinel runs a four-stage loop, and it only stops when the vulnerability is really gone.
 
-**Usage is identical:**
+```mermaid
+flowchart LR
+    A([Vulnerable code]) --> P
+    P[🧭 Planner<br/>Analyze the issue<br/>find fix patterns with RAG] --> C
+    C[✍️ Coder<br/>Write the patch<br/>in the target language] --> V
+    V{🔍 Verifier<br/>Bandit / Semgrep}
+    V -- passes --> D([✅ Safe code])
+    V -- fails --> R
+    R[🪞 Reflector<br/>Critique the failure] --> C
+```
+
+| Stage | What it does |
+|:------|:-------------|
+| 🧭 **Planner** | Analyzes the code and the vulnerability, and uses RAG to find known fix patterns. |
+| ✍️ **Coder** | Writes the patch in the target language (Python, C++, JS, and more). |
+| 🔍 **Verifier** | Runs static analysis (Bandit or Semgrep) to confirm the fix is actually safe. |
+| 🪞 **Reflector** | If verification fails, writes feedback so the Coder can correct itself and try again. |
+
+<br />
+
+## 🌍 Supported Languages
+
+*New in v0.2.1:* Sentinel now auto-fixes vulnerabilities in seven languages.
+
+| Language | Files | Verified by |
+|:---------|:------|:------------|
+| 🐍 Python | `.py` | Bandit |
+| 🟨 JavaScript | `.js` | Semgrep |
+| 🔷 TypeScript | `.ts` | Semgrep |
+| ☕ Java | `.java` | Semgrep |
+| ⚙️ C / C++ | `.c`, `.cpp` | Semgrep |
+| 🐹 Go | `.go` | Semgrep |
+| 🗄️ SQL | `.sql` | Semgrep |
+
+The commands are the same for every language:
+
 ```bash
 sentinel fix src/main.cpp
 sentinel apply services/auth.js
 ```
 
----
-
-## 📖 How It Works
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   PLANNER   │────▶│    CODER    │────▶│    TEST     │────▶│  REFLECTOR  │
-│  Analyze    │     │  Generate   │     │  Verify     │     │  Critique   │
-│  the CVE    │     │  the patch  │     │  the fix    │     │  if failed  │
-└─────────────┘     └─────────────┘     └─────────────┘     └──────┬──────┘
-                                                                   │
-                          ◀───────────────────────────────────────-┘
-                                    (Loop until fixed)
-```
-
-1. **Planner**: Analyzes code & vulnerability. Uses RAG to find fix patterns.
-2. **Coder**: Writes the patch in the target language (Python, C++, JS, etc.).
-3. **Verifier**: Runs SAST (Bandit or Semgrep) to verify safety.
-4. **Reflector**: If SAST fails, providing feedback for self-correction.
-
----
+<br />
 
 ## 💻 Usage Examples
 
-### Python (SQL Injection)
 ```bash
+# Python: SQL injection
 sentinel apply auth.py
-```
 
-### JavaScript (XSS)
-```bash
+# JavaScript: XSS
 sentinel apply frontend/input.js
-```
 
-### C++ (Buffer Overflow)
-```bash
+# C++: buffer overflow (preview first)
 sentinel fix src/buffer_test.cpp
 ```
 
----
+**Illustrative example:** a SQL injection fix in Python
+
+```diff
+- query = f"SELECT * FROM users WHERE name = '{username}'"
+- cursor.execute(query)
++ cursor.execute("SELECT * FROM users WHERE name = ?", (username,))
+```
+
+> 💡 **Tip:** start with `sentinel fix` to preview the change. Once you're happy, use `sentinel apply` to write it to the file.
+
+<br />
 
 ## 🛠️ CLI Commands
 
-| Command | Description |
-|---------|-------------|
+| Command | What it does |
+|:--------|:-------------|
 | `sentinel setup` | Interactive setup guide |
-| `sentinel fix <file>` | Analyze and show fix (preview only) |
-| `sentinel apply <file>` | Analyze, fix, and write to the file |
+| `sentinel fix <file>` | Analyze and show the fix (**preview only**) |
+| `sentinel apply <file>` | Analyze, fix, and **write to the file** |
 | `sentinel ui` | Launch the web dashboard |
 | `sentinel version` | Show version info |
 
----
+<br />
 
 ## 📦 Installation Options
 
-### From PyPI (Recommended)
+**From PyPI** *(recommended)*
+
 ```bash
 pip install sentinel-sec
 ```
 
-### From GitHub (Development)
+**From GitHub** *(for development)*
+
 ```bash
 git clone https://github.com/VaibhavBhagat665/sentinel-sec.git
 cd sentinel-sec
 pip install -e .
 ```
 
----
+<br />
 
 ## 🤝 Contributing
 
+Contributions are very welcome.
+
 1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m "Add amazing feature"`
+4. Push the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
----
+Found a bug or want a new language supported? [Open an issue](../../issues).
+
+<br />
 
 ## 📄 License
 
-MIT License. See [LICENSE](LICENSE) for details.
+Released under the [MIT License](LICENSE).
 
----
+<br />
 
-**Made with ❤️ by a mad man**
+<div align="center">
+
+**If Sentinel saved you from shipping a vulnerability, drop a ⭐ on the repo.**
+
+Made with ❤️ by a mad man
+
+</div>
